@@ -7,6 +7,7 @@
    <div class="blog-title">{{title}}</div>
    <div class="blog-body">{{body}}</div>
    <div class="blog-controls">
+     <button>Edit</button>
      <button @click="$emit('blog-post-delete',id)"> Delete </button>
    </div>
   </div>
