@@ -30,7 +30,8 @@ export default {
 .blog-post{
   background-color:#2c3e50;
   color:white;
-  max-width:600px;
+  width:600px;
+  box-sizing: border-box;
   border:3px solid #42b983;
   margin-bottom: 10px;
 }
