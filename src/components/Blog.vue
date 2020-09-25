@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="blog">
     <blog-post
       v-for="post in posts"
-      :key = "post.postID"
-      :userID = "post.userID"
-      :postID = "post.postID"
-      :postTitle = post.postTitle
-      :postBody = "post.postBody"
+      :key = "post.id"
+      :userId = "post.userId"
+      :id = "post.id"
+      :title = "post.title"
+      :body = "post.body"
     ></blog-post>
   </div>
 </template>
@@ -24,10 +24,20 @@ export default {
         {userID: 1,postID: 2, postTitle: "Unpopular Opinion", postBody: "Why do we all have to wear these ridiculous ties?"}
       ]
     }
+  },
+  // This works for now. Maybe one day we can lazy load, but (ironically) I'm too lazy to implement this.
+  mounted: function (){
+    fetch("https://jsonplaceholder.typicode.com/posts").then(response=>response.json())
+        .then(json=>{this.posts=json;});
   }
 }
 </script>
 
 <style scoped>
-
+.blog{
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: aliceblue;
+}
 </style>
