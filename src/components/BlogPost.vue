@@ -4,11 +4,20 @@
      <div class="user-id">User {{userId}}</div>
      <div class="post-id">Post#{{id}}</div>
    </div>
-   <div class="blog-title">{{title}}</div>
-   <div class="blog-body">{{body}}</div>
+   <div v-if="!editing">
+     <div class="blog-title">{{title}}</div>
+     <div class="blog-body">{{body}}</div>
+   </div>
+   <form @submit="blogPostEdit" v-if="editing" class="edit-post-form">
+     <label :for="'edit-title'+id">Title:</label>
+     <input v-model="editedData.title" name="edit-title" v-bind:id="'edit-title'+id" class="edit-title"/>
+     <label :for="'edit-body'+id">Body:</label>
+     <textarea v-model="editedData.body" :id="'edit-body'+id" class="edit-body"></textarea>
+     <input :id="'edit-save'+id" type="submit" value="Save!" class="edit-save" @click="validatePost" :disabled="updating"/>
+   </form>
    <div class="blog-controls">
-     <button>Edit</button>
-     <button @click="$emit('blog-post-delete',id)"> Delete </button>
+     <button @click="editing=!editing" :disabled="updating">{{ editing?"Cancel Edit":"Edit" }}</button>
+     <button @click="$emit('blog-post-delete',id)" :disabled="updating"> Delete </button>
    </div>
   </div>
 </template>
@@ -17,11 +26,59 @@
 
 export default {
   name: "BlogPost",
+  data: function(){
+    return{
+      editing:false,
+      editedData:{
+        title: this.title,
+        body: this.body
+      },
+      updating:false
+    }},
   props:{
     userId: Number,
     id: Number,
     title: String,
     body: String
+  },
+  methods:{
+    blogPostEdit: function (e) {
+      this.updating=true;
+      fetch('https://jsonplaceholder.typicode.com/posts/1', {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: this.id,
+          title: this.editedData.title,
+          body: this.editedData.body,
+          userId: this.userId
+        }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8"
+        }
+      })
+          .then((res) =>{
+            this.updating=false;
+            console.log(res.status)
+            if(res.status==200) { // All Okay :)
+              return res.json();
+            }
+            else{
+              console.log("Error while editing post with status:" + res.status);
+            }
+          })
+          .then((json) =>{
+            if(!json) return;
+              this.$emit("blog-post-edit",this.id,json);
+              this.editing = false;
+          })
+        e.preventDefault();
+      },
+    validatePost: function (e){
+      if(this.editedData.body===null||!this.editedData.body.length
+          ||this.editedData.title===null||!this.editedData.title.length) {
+        e.preventDefault();
+      }
+    }
   }
 }
 </script>
@@ -34,6 +91,7 @@ export default {
   box-sizing: border-box;
   border:3px solid #42b983;
   margin-bottom: 10px;
+  padding:5px;
 }
 .blog-body{
   border-bottom: 1px solid #42b983;
@@ -55,5 +113,19 @@ export default {
   display:flex;
   justify-content: space-between;
 }
-
+.edit-post-form{
+  display:block;
+  width:100%;
+}
+.edit-body, .edit-title{
+  display:block;
+  width:95%;
+  margin-left:auto;
+  margin-right: auto;
+}
+.edit-save{
+  display:block;
+  margin-left:auto;
+  margin-right: auto;
+}
 </style>

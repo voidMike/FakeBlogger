@@ -19,6 +19,7 @@
     <div v-if="loaded" class="post-wrapper">
       <blog-post
         v-on:blog-post-delete="blogPostDelete"
+        v-on:blog-post-edit="blogPostEdit"
         v-for="post in filteredPosts"
 
         :key = "post.id"
@@ -142,7 +143,8 @@ export default {
             }
           })
           .then((json)=>{
-              this.posts.splice(0,0,json); // Normally this would go to the bottom since the id is largest, but for showcase, we'll put it on top.
+            if(!json) return;
+            this.posts.splice(0,0,json); // Normally this would go to the bottom since the id is largest, but for showcase, we'll put it on top.
               //Perhaps we should've displayed the posts from largest id to smallest, but whatever, it's not that important now.
           });
       e.preventDefault(); // Honestly, reloading the page kinda breaks things. So don't reload.
@@ -151,10 +153,16 @@ export default {
       this.newPost=!this.newPost;
     },
     validateNewPost: function (e){
+      console.log("Validating New Post Form!")
       if(this.newPostData.body===null||!this.newPostData.body.length
        ||this.newPostData.title===null||!this.newPostData.title.length) {
         e.preventDefault();
       }
+    },
+    blogPostEdit: function (id,json){
+      let post = this.posts[this.getPostIndexByID(id)];
+      post.title = json.title;
+      post.body = json.body;
     }
   }
 }
