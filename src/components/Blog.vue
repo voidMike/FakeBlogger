@@ -13,7 +13,7 @@
       <label for="new-title-input">Title:</label>
       <input type="text" name="new-title-input" id="new-title-input" v-model="newPostData.title"/>
       <label for="new-body-textarea">Body:</label>
-      <textarea type="text" name="id-new-body-textarea" id="new-body-textarea" v-model="newPostData.body"></textarea>
+      <textarea name="id-new-body-textarea" id="new-body-textarea" v-model="newPostData.body"></textarea>
       <input id="new-post-submit" type="submit" value="Submit!" @click="validateNewPost">
     </form>
     <div v-if="loaded" class="post-wrapper">
@@ -69,7 +69,7 @@ export default {
         case "user": searchFun = (el)=>{return el.userId===Number(this.searchTerm)};break;
         case "id": searchFun = (el)=>{return el.id===Number(this.searchTerm)};break;
         case "text":{
-          searchFun = (el)=>{
+          searchFun = (el)=>{ // Basic text search utilizing String.prototype.includes method.
             let lowercaseTitle = el.title.toLowerCase();
             let lowercaseBody = el.body.toLowerCase();
             let lowercaseSearch = this.searchTerm.toLowerCase();
@@ -93,7 +93,6 @@ export default {
       let index = this.posts.findIndex(
           (elem)=>{return elem.id === id; }
       );
-      console.log(index);
       return index;
     },
     blogPostDelete: function (id){
@@ -111,12 +110,13 @@ export default {
               if(pindex>=0)
                 this.posts.splice(pindex,1);
             }
-            else console.log("Error while deleting post#"+id);
+            else console.log("Error while deleting post#"+id+" with status:"+res.status);
           }//TODO: Should probably also include catch to handle rejected promises. Later,
           // Fetch API only rejects in case of network errors, so try not to have any for now.
       )
     },
     //FIXME: Not really something that /can/ be fixed here, but we can only add 1 post due to the server always responding with the same post ID.
+    //Technically I could keep track of how many id 101 posts there are and manually keep incrementing the counter... but, why bother for this demo?
     blogPostCreate: function(e){
       this.postUploading = true; //Used to disable anything that shouldn't be active while uploading
       fetch('https://jsonplaceholder.typicode.com/posts', {
@@ -156,13 +156,14 @@ export default {
       this.newPost=!this.newPost;
     },
     validateNewPost: function (e){
-      console.log("Validating New Post Form!")
+      //Right now, all I care about if it's not empty, Vue JS handles escaping html tags.
       if(this.newPostData.body===null||!this.newPostData.body.length
        ||this.newPostData.title===null||!this.newPostData.title.length) {
         e.preventDefault();
       }
     },
     blogPostEdit: function (id,json){
+      //Since Vue JS can't do prop edits from children, we're taking it here with the help of custom events
       let post = this.posts[this.getPostIndexByID(id)];
       post.title = json.title;
       post.body = json.body;

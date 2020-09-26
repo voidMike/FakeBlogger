@@ -16,7 +16,7 @@
      <input :id="'edit-save'+id" type="submit" value="Save!" class="edit-save" @click="validatePost" :disabled="updating"/>
    </form>
    <div class="blog-controls">
-     <button @click="editing=!editing" :disabled="updating">{{ editing?"Cancel Edit":"Edit" }}</button>
+     <button @click="toggleEdit" :disabled="updating">{{ editing?"Cancel Edit":"Edit" }}</button>
      <button @click="$emit('blog-post-delete',id)" :disabled="updating"> Delete </button>
    </div>
   </div>
@@ -56,28 +56,35 @@ export default {
           "Content-type": "application/json; charset=UTF-8"
         }
       })
-          .then((res) =>{
-            this.updating=false;
-            console.log(res.status)
-            if(res.status==200) { // All Okay :)
-              return res.json();
-            }
-            else{
-              console.log("Error while editing post with status:" + res.status);
-            }
-          })
-          .then((json) =>{
-            if(!json) return;
-              this.$emit("blog-post-edit",this.id,json);
-              this.editing = false;
-          })
+        .then((res) =>{
+          this.updating=false;
+          if(res.status==200) { // All Okay :)
+            return res.json();
+          }
+          else{
+            console.log("Error while editing post with status:" + res.status);
+          }
+        })
+        .then((json) =>{
+          if(!json) return;
+            this.$emit("blog-post-edit",this.id,json);
+            this.editing = false;
+        })
         e.preventDefault();
       },
     validatePost: function (e){
+      //Right now, all I care about if it's not empty, Vue JS handles escaping html tags.
       if(this.editedData.body===null||!this.editedData.body.length
           ||this.editedData.title===null||!this.editedData.title.length) {
-        e.preventDefault();
+        e.preventDefault(); // Stop the buttons default action.
       }
+    },
+    toggleEdit: function(){
+      // Set or Reset the editedData before and after editing or canceling editing.
+      // I felt it looked ugly when last edit remained in the form after canceling.
+      this.editedData.title = this.title;
+      this.editedData.body = this.body;
+      this.editing=!this.editing;
     }
   }
 }
