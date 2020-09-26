@@ -70,7 +70,10 @@ export default {
         case "id": searchFun = (el)=>{return el.id===Number(this.searchTerm)};break;
         case "text":{
           searchFun = (el)=>{
-            return el.title.includes(this.searchTerm)||el.body.includes(this.searchTerm);
+            let lowercaseTitle = el.title.toLowerCase();
+            let lowercaseBody = el.body.toLowerCase();
+            let lowercaseSearch = this.searchTerm.toLowerCase();
+            return lowercaseTitle.includes(lowercaseSearch)||lowercaseBody.includes(lowercaseSearch);
           }
           break;
         }
